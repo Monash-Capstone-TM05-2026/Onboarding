@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # Configure the database URL with timezone set to Asia/Kuala_Lumpur
+#    url: jdbc:mysql://localhost:3306/fit5120_onboarding_db?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Kuala_Lumpur
+    url: jdbc:mysql://localhost:3306/fit5120_onboarding_db_en?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Kuala_Lumpur
+
+    username: root
+    password: WSws011314!
+
+mybatis-plus:
+  configuration:
+    # Enable the automatic mapping of underscore fields in the database to hump attributes of entity classes
+    # (for example: user_name -> userName)
+    map-underscore-to-camel-case: true
+    # Enable SQL printing in the console
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
