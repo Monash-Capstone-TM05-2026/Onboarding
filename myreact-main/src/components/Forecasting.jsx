@@ -6,6 +6,7 @@ function Forecasting({
   currentApi,
   tomorrowColor,
   tomorrowError,
+  tomorrowAdvice,
 }) {
   const isError = Boolean(tomorrowError != null);
   return (
@@ -20,28 +21,56 @@ function Forecasting({
           <div>
             {/* if we dont have error, show the AQI*/}
             {!isError ? (
-              <div>
-                <div className="risk-card">
-                  <div className="indicator-wrapper">
-                    <div className="risk-color-block"></div>
-                    <div className="aqi-display">
-                      <span className="aqi-value">{currentApi}</span>
-                      <span className="aqi-unit" style={{ paddingTop: "20px" }}>
-                        AVERAGE <br /> AIR QUALITY LEVEL
-                      </span>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: "8%",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
+                  <div className="risk-card">
+                    <div className="indicator-wrapper">
+                      <div className="risk-color-block"></div>
+                      <div className="aqi-display">
+                        <span className="aqi-value">{currentApi}</span>
+                        <span
+                          className="aqi-unit"
+                          style={{ paddingTop: "20px" }}
+                        >
+                          AVERAGE <br /> AIR QUALITY LEVEL
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  <div>
+                    {/* Only show the badge if there is no error and we have a risk lable to display */}
+                    {!tomorrowError && tomorrowRiskText && (
+                      <div className="forecast-badge2">
+                        <span className="badge-label">
+                          Expected Air Quality to Be
+                        </span>
+                        <span className="badge-value">{tomorrowRiskText}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  {/* Only show the badge if there is no error and we have a risk lable to display */}
-                  {!tomorrowError && tomorrowRiskText && (
-                    <div className="forecast-badge2">
-                      <span className="badge-label">
-                        Expected Air Quality to Be
-                      </span>
-                      <span className="badge-value">{tomorrowRiskText}</span>
-                    </div>
-                  )}
+                <div className="risk-info">
+                  <div
+                    className="senior-advice-box"
+                    style={{ marginBottom: "10%" }}
+                  >
+                    <span className="advice-label">NEXT DAY ADVICE:</span>
+                    <div className="senior-advice-text">{tomorrowAdvice}</div>
+                  </div>
                 </div>
               </div>
             ) : (

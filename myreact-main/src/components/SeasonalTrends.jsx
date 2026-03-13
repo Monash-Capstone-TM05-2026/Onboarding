@@ -38,6 +38,17 @@ function SeasonalTrends({ trendsData, trendSummary }) {
     })
     .join(" ");
 
+  const peaks = trendsData.map((d, i, arr) => {
+    if (i === 0 || i === arr.length - 1) return false; // skip first/last
+    return d.value > arr[i - 1].value && d.value > arr[i + 1].value;
+  });
+  //get three highest peaks indexes
+  const peakIndexes = trendsData
+    .map((d, i) => ({ value: d.value, index: i }))
+    .sort((a, b) => b.value - a.value) // sort descending
+    .slice(0, 3) // take top 3
+    .map((d) => d.index); // get their original indexes
+
   return (
     <div className="seasonal-trends-container">
       <div className="card-title">
@@ -67,6 +78,28 @@ function SeasonalTrends({ trendsData, trendSummary }) {
             points={points}
             className="trend-line-path"
           />
+          {trendsData.map((d, i) => {
+            if (!peakIndexes.includes(i)) return null; // only top 3 peaks
+
+            const x =
+              (i * (width - padding * 2)) / (trendsData.length - 1) + padding;
+            const y =
+              height -
+              padding -
+              ((d.value - minVal) / range) * (height - padding * 2);
+
+            return (
+              <circle
+                key={`peak-${i}`}
+                cx={x}
+                cy={y}
+                r={6}
+                fill="red"
+                stroke="white"
+                strokeWidth={2}
+              />
+            );
+          })}
 
           {/* Month Labels */}
           {trendsData.map((d, i) => {

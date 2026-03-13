@@ -13,6 +13,14 @@ function TodayDashboard({
   seniorAdvice,
 }) {
   const hasValidData = currentApi !== null;
+  const getAqiPosition = (aqi) => {
+    if (aqi <= 50) return (aqi / 50) * 25;
+    if (aqi <= 100) return 25 + ((aqi - 50) / 50) * 25;
+    if (aqi <= 150) return 50 + ((aqi - 100) / 50) * 25;
+    if (aqi <= 200) return 75 + ((aqi - 150) / 50) * 25;
+
+    return 100;
+  };
   //if we dont have the AQI data, we will show the error message
   if (!hasValidData) {
     return (
@@ -69,18 +77,44 @@ function TodayDashboard({
       </div>
 
       <div className="risk-card">
-        <div className="indicator-wrapper">
-          <div className="risk-color-block"></div>
-          <div className="aqi-display">
-            <span className="aqi-value">{currentApi}</span>
-            <span className="aqi-unit">AIR QUALITY LEVEL</span>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: "2rem",
+            alignItems: "center",
+          }}
+        >
+          <div
+            className="aqi-scale-wrapper"
+            style={{ display: "flex", alignItems: "center", gap: "0.1rem" }}
+          >
+            {/* Vertical label */}
+            <div className="aqi-vertical-label">
+              AQI <span className="aqi-label-small">Air Quality Index</span>
+            </div>
+
+            {/* Color scale */}
+            <div className="aqi-color-scale">
+              <div
+                className="aqi-slider"
+                style={{ bottom: `${getAqiPosition(currentApi)}%` }}
+              ></div>
+            </div>
+          </div>
+          <div className="indicator-wrapper">
+            <div className="risk-color-block"></div>
+            <div className="aqi-display">
+              <span className="aqi-value">{currentApi}</span>
+              <span className="aqi-unit">AIR QUALITY LEVEL</span>
+            </div>
           </div>
         </div>
 
         <div className="risk-info">
           <div className="senior-advice-box">
             <span className="advice-label">Elderly Care Advice:</span>
-            <div className="senior-advice-text">{seniorAdvice}</div>
+            <div className="senior-advice-text">{currentAdvice}</div>
           </div>
         </div>
       </div>

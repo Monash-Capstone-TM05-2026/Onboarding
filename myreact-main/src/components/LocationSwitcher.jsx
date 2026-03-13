@@ -36,7 +36,7 @@ function LocationSwitcher({
 
   return (
     <header className="location-header">
-      <h1 className="title">Weather Application</h1>
+      <h1 className="title">AETHER</h1>
 
       <div className="location-controls">
         <div className="search-container">

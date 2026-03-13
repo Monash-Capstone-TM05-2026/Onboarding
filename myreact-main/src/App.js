@@ -65,7 +65,7 @@ function App() {
       },
       2: {
         locationName: "Subang Jaya",
-        currentApi: 85,
+        currentApi: 160,
         tomorrowApi: 110,
         lastUpdated: "Updated: 10:15 AM",
         dataSource: "Department of Environment",
@@ -227,11 +227,12 @@ function App() {
     const getRiskLevel = (aqi) => {
       if (aqi <= 50) return { color: "color-green", text: "GOOD" };
       if (aqi <= 100) return { color: "color-yellow", text: "MODERATE" };
-      return { color: "color-red", text: "UNHEALTHY" };
+      if (aqi <= 150) return { color: "color-orange", text: "UNHEALTHY" };
+      return { color: "color-red", text: "HAZARDOUS" };
     };
 
+    // updating both currentrisk and tomorrow risk color and text based on the AQI value
     const currentRisk = getRiskLevel(baseData.currentApi);
-
     const tomorrowDataAvailable =
       baseData.tomorrowApi !== undefined && baseData.tomorrowApi !== null;
     const tomorrowRisk = tomorrowDataAvailable
@@ -252,12 +253,24 @@ function App() {
           ? "✅ Atmosphere is serene and safe for outdoor leisure"
           : currentRisk.text === "MODERATE"
             ? "🟡 Ambient air is moderate, mindful activity recommended"
-            : "⚠️ Caution: Atmospheric quality is currently compromised",
+            : currentRisk.text === "UNHEALTHY"
+              ? "⚠️ Caution: Atmospheric quality is currently compromised"
+              : "🚨 Hazardous air quality — avoid outdoor exposure",
+
+      tomorrowAdvice: tomorrowRisk
+        ? tomorrowRisk.text === "GOOD"
+          ? "Clear skies and fresh air expected tomorrow"
+          : tomorrowRisk.text === "MODERATE"
+            ? "Moderate conditions expected, consider indoor plans"
+            : tomorrowRisk.text === "UNHEALTHY"
+              ? "Unhealthy conditions expected, stay indoors if possible"
+              : "Hazardous conditions expected, avoid outdoor activities"
+        : "Tomorrow's air quality data unavailable",
     };
 
     setDashboardData(finalData);
 
-    if (baseData.currentApi > 100) {
+    if (baseData.currentApi > 150) {
       setShowAlert(true);
     }
   };
@@ -374,6 +387,7 @@ function App() {
             currentApi={dashboardData.currentApi}
             tomorrowColor={dashboardData.tomorrowColor}
             tomorrowError={dashboardData.tomorrowError}
+            tomorrowAdvice={dashboardData.tomorrowAdvice}
           />
 
           <div
