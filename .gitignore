@@ -1,0 +1,70 @@
+# --- General / IDEs ---
+# Ignore IDE settings at any level (Root, Frontend, or Backend)
+.vscode/
+.idea/
+.idea
+*.iws
+*.iml
+*.ipr
+.DS_Store
+.settings/
+.classpath
+.project
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# --- Backend (Java/Spring) ---
+backend/HELP.md
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/.sts4-cache/
+
+### NetBeans ###
+backend/nbproject/private/
+backend/nbbuild/
+backend/dist/
+backend/nbdist/
+backend/.nb-gradle/
+backend/build/
+!backend/**/src/main/**/build/
+!backend/**/src/test/**/build/
+
+# Keep build artifacts required for specific testing if needed
+!backend/**/src/main/**/target/
+!backend/**/src/test/**/target/
+
+# --- Frontend (React) ---
+# dependencies
+frontend/node_modules/
+frontend/.pnp
+frontend/.pnp.js
+
+# testing
+frontend/coverage/
+
+# production
+frontend/build/
+frontend/dist/
+
+
+# Logs
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# --- Environment Secrets (CRITICAL) ---
+# Never push these to the cloud as they contain API keys/passwords
+.DS_Store
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+**/ .env*
