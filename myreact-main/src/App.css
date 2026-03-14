@@ -1,0 +1,1062 @@
+:root {
+  --bg-main: #f4f1ed;
+  --text-main: #1a1a1a; /* Darker for better contrast */
+  --text-muted: #4a4a4a; /* Darker than before to avoid "light gray" text */
+  --spacing: 12px; /* Increased spacing */
+
+  --sage-vibrant: #86a67a;
+  --ochre-vibrant: #d4a373;
+  --coral-vibrant: #e07a5f;
+
+  --glass-bg: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+body {
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: 20px; /* Point 2: Base font size 20px+ */
+  line-height: 1.5;
+  background-color: var(--bg-main);
+  background-image: radial-gradient(
+    circle at 2px 2px,
+    rgba(0, 0, 0, 0.02) 1px,
+    transparent 0
+  );
+  background-size: 24px 24px; /* Grid dots texture */
+  color: var(--text-main);
+  min-height: 100vh;
+}
+
+.risk-text-highlight {
+  text-decoration: underline;
+  text-underline-offset: 8px;
+}
+
+.risk-text-highlight.color-green {
+  color: var(--sage-vibrant);
+  margin-left: 15px;
+}
+
+.risk-text-highlight.color-yellow {
+  color: #f1f124;
+  margin-left: 15px;
+}
+
+.risk-text-highlight.color-orange {
+  color: #e67e22;
+  margin-left: 15px;
+}
+
+.risk-text-highlight.color-red {
+  color: var(--coral-vibrant);
+  margin-left: 15px;
+}
+
+/* Trust & Source Info Styling - Point 6 */
+.banner-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 55px;
+}
+
+.trust-info {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  gap: 5px;
+}
+
+.update-time,
+.data-source {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Senior Advice Box - Point 7 */
+.senior-advice-box {
+  background: rgb(255, 255, 255);
+  padding: 30px;
+  border-radius: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+  max-width: 500px;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+.advice-label {
+  display: block;
+  font-size: 2rem;
+  color: var(--text-main);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-weight: 600;
+}
+
+.senior-advice-text {
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #374151;
+}
+
+/* Larger Search & Inputs - Point 5 - Updated */
+
+.App {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: calc(var(--spacing) * 6);
+  display: flex;
+  flex-direction: column;
+  /*gap: calc(var(--spacing) * 10)*/
+}
+
+.initializing {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
+
+/* Header & Location Controls */
+.location-header {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: calc(var(--spacing) * 4);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+  margin-bottom: 5%;
+  position: relative;
+  z-index: 1000;
+}
+
+.brand {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-main);
+}
+
+.location-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Search Container */
+.search-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  letter-spacing: 0.1em;
+}
+
+.search-container {
+  position: relative;
+  flex: 1;
+  max-width: 600px;
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 2px solid var(--text-main);
+  border-radius: 100px;
+  padding: 0 10px 0 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  height: 80px;
+}
+
+.search-input {
+  border: none;
+  background: transparent;
+  flex: 1;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--text-main);
+  outline: none;
+  padding: 0 20px;
+}
+
+.search-btn {
+  background: var(--text-main);
+  color: white;
+  border: none;
+  border-radius: 100px;
+  height: 60px;
+  padding: 0 32px;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+  transform: scale(1.05);
+}
+
+.use-location-btn {
+  background: white;
+  border: 2px solid var(--text-main);
+  border-radius: 100px;
+  height: 80px;
+  padding: 0 40px; /* padding left and right */
+  margin-top: 26px;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.use-location-btn:hover {
+  background: var(--text-main); /* dark colour */
+  color: white; /* white text */
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 24px;
+  margin-top: 12px;
+  list-style: none;
+  overflow: hidden;
+  z-index: 2000;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.search-results li {
+  padding: 24px 32px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.164);
+  transition: all 0.2s ease;
+}
+
+.search-results li:hover {
+  background: var(--bg-main);
+  padding-left: 40px;
+}
+
+.no-results {
+  color: rgba(0, 0, 0, 0.4);
+  font-weight: 400;
+  cursor: default;
+}
+
+.search-results li.no-results:hover {
+  background: none;
+  padding-left: 32px;
+}
+
+.current-location-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 100px;
+  padding: 12px 24px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.current-location-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.6);
+  transform: translateY(-1px);
+}
+
+.current-location-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.location-error-msg {
+  font-size: 0.9rem;
+  color: #d32f2f; /* More prominent red for errors */
+  padding: 15px 20px;
+  background: rgba(211, 47, 47, 0.1);
+  border-radius: 12px;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  border: 1px solid rgba(211, 47, 47, 0.2);
+}
+
+.error-icon {
+  font-size: 1.1rem;
+}
+
+/* Alert Modal - AC8 */
+.alert-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(15px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.alert-modal {
+  background: #fd3030;
+  color: white;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 40px;
+  padding: 40px;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 30px 60px rgba(211, 47, 47, 0.4);
+  animation: modalPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.alert-close-btn {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.alert-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
+}
+
+.alert-icon-wrapper {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+  opacity: 0.9;
+}
+
+.alert-value-display {
+  margin-bottom: 32px;
+}
+
+.alert-aqi-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  opacity: 0.8;
+  margin-bottom: 8px;
+}
+
+.alert-aqi-value {
+  font-size: 8rem; /* AC8: 大号字体 */
+  font-weight: 800; /* AC8: 加粗字体 */
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.alert-message {
+  font-size: 1.8rem;
+  font-weight: 500;
+  line-height: 1.3;
+  margin-bottom: 40px;
+  letter-spacing: -0.01em;
+}
+
+.alert-action-btn {
+  background: white;
+  color: #d32f2f;
+  border: none;
+  padding: 18px 48px;
+  border-radius: 100px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.alert-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Forecast Toggle Button - US 2.1 */
+.forecast-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: 100px;
+  padding: 12px 24px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 12px;
+}
+
+.forecast-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+.forecast-toggle-btn.active {
+  background: var(--text-main);
+  color: white;
+}
+
+.enlarged-forecast.error-state {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px dashed rgba(0, 0, 0, 0.1);
+  color: var(--text-muted);
+}
+
+.enlarged-forecast.error-state .forecast-text {
+  font-size: 1.2rem;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.enlarged-forecast.error-state .forecast-badge {
+  display: none;
+}
+
+/* Forecast Card Interactivity - Removed Clickable Logic */
+
+.location-context {
+  font-size: 2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.forecast-main-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+}
+.forecast-main-content2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.forecast-text {
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.forecast-badge {
+  text-align: right;
+  padding-left: 20px;
+  border-left: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.forecast-badge2 {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+.badge-label {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.badge-value {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.color-green .badge-value {
+  color: var(--sage-vibrant);
+}
+.color-yellow .badge-value {
+  color: #e3e30a;
+}
+
+.color-orange .badge-value {
+  color: #e67e22;
+  margin-left: 15px;
+}
+.color-red .badge-value {
+  color: var(--coral-vibrant);
+}
+
+.card-tap-hint {
+  position: absolute;
+  bottom: 12px;
+  right: 20px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.clickable-card:hover .card-tap-hint {
+  opacity: 0.8;
+}
+
+/* Secondary Dashboard Grid - New Static Layout */
+.secondary-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 5%;
+  border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+  padding-top: 5%;
+}
+
+/* Seasonal Trends - US 2.2 Refined for Static Display */
+/* March traditionally maintains a balanced baseline */
+.seasonal-trends-container {
+  /*background: var(--glass-bg);*/
+  background: rgb(255 255 255);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 40px;
+  padding: calc(var(--spacing) * 7);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.trends-chart-wrapper {
+  margin: 40px 0;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 30px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.trends-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.trend-line-path {
+  filter: drop-shadow(0 4px 8px rgba(212, 163, 115, 0.3));
+}
+
+.month-label {
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+.trend-insight-box {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  background: white;
+  padding: 32px;
+  border-radius: 30px;
+  border-left: 8px solid var(--ochre-vibrant);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.insight-icon {
+  color: var(--ochre-vibrant);
+  padding-top: 2px;
+}
+
+.insight-text {
+  font-size: 1.4rem;
+  line-height: 1.5;
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+/* Error State UI - AC3 (Epic 3.0) */
+.upper-dashboard.error-state {
+  background: rgba(175, 172, 172, 0.527);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.error-visual {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+  opacity: 0.2;
+}
+
+/*.color-error {
+  background-color: #ffffff;
+}*/
+
+.color-error .risk-color-block {
+  display: none;
+}
+
+/* Today Dashboard - Glassmorphism & Halo */
+.upper-dashboard {
+  position: relative;
+  /*background: var(--glass-bg); */
+  background: rgb(173 173 173 / 24%);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 40px;
+  padding: calc(var(--spacing) * 6);
+  overflow: hidden;
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.02),
+    0 20px 40px rgba(0, 0, 0, 0.04);
+  margin-bottom: 5%;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.status-banner {
+  margin-bottom: calc(var(--spacing) * 3);
+}
+
+.location-tag {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: block;
+}
+
+.conclusion-text {
+  font-size: 2.5rem; /* Larger */
+  font-weight: 700;
+  line-height: 1.1;
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.risk-card {
+  display: flex;
+  align-items: center;
+  gap: 5%;
+  justify-content: center;
+}
+
+/* AC1: 大号空气质量指示器 & 颜色块 */
+.indicator-wrapper {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.risk-color-block {
+  position: absolute;
+  width: 90%;
+  height: 90%;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border); /* 加粗边框 */
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.05),
+    inset 0 0 20px rgba(255, 255, 255, 0.5); /* 增加内发光质感 */
+}
+
+/* 颜色块动态变色 - AC2: 精确分类与美化 */
+.color-green .risk-color-block {
+  /*background: rgba(134, 166, 122, 0.28); */
+  background: rgb(161 215 140 / 52%);
+  border-color: rgba(134, 166, 122, 0.7);
+  box-shadow: 0 20px 50px rgba(134, 166, 122, 0.25);
+  border-radius: 50%;
+}
+
+.color-yellow .risk-color-block {
+  background: rgba(255, 251, 0, 0.432);
+  border-color: rgba(235, 245, 140, 0.925);
+  box-shadow: 0 20px 50px rgba(212, 163, 115, 0.25);
+  border-radius: 50%;
+}
+
+.color-orange .risk-color-block {
+  background: #e67d22a2;
+  border-color: rgba(241, 124, 7, 0.7);
+  box-shadow: 0 20px 50px rgba(252, 128, 4, 0.25);
+  border-radius: 50%;
+}
+
+.color-red .risk-color-block {
+  background: rgba(224, 122, 95, 0.35);
+  border-color: rgba(241, 117, 82, 0.8);
+  box-shadow: 0 20px 50px rgba(224, 122, 95, 0.35);
+  border-radius: 50%;
+}
+
+.aqi-display {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.aqi-value {
+  font-size: 8rem;
+  font-weight: 100;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.aqi-unit {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  display: block;
+}
+
+.risk-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.risk-label {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.risk-icon-wrapper {
+  color: var(--text-muted);
+}
+
+/* Lower Dashboard - US 2.1 Refined */
+.lower-dashboard {
+  display: grid;
+  gap: 32px;
+}
+
+.enlarged-forecast,
+.historical-insight {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  border-radius: 40px;
+  padding: calc(var(--spacing) * 8);
+}
+
+.enlarged-forecast {
+  grid-column: span 1;
+  padding: calc(var(--spacing) * 6) !important;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.enlarged-forecast .forecast-text {
+  font-size: 1.8rem; /* 显著调大字体 */
+  font-weight: 400;
+  line-height: 1.3;
+  margin: 20px 0;
+}
+
+.enlarged-forecast.color-green {
+  background: rgba(134, 166, 122, 0.15);
+  border: 2px solid var(--sage-vibrant);
+}
+
+.enlarged-forecast.color-yellow {
+  background: rgba(255, 251, 0, 0.15);
+  border: 2px solid #ffff00a3;
+}
+
+.enlarged-forecast.color-orange {
+  background: rgba(230, 125, 34, 0.15);
+  border: 2px solid #e67d22;
+}
+
+.enlarged-forecast.color-red {
+  background: rgba(224, 122, 95, 0.2);
+  border: 2px solid var(--coral-vibrant);
+}
+
+.enlarged-forecast .badge-value {
+  font-size: 1.4rem; /* 调大风险标签数值 */
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 24px;
+}
+
+.card-title2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 50px;
+}
+
+.historical-insight p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: var(--text-main);
+}
+
+/* State Colors - Morandi & Gradients */
+.color-green .risk-label {
+  color: var(--sage-vibrant);
+}
+
+.color-yellow .risk-label {
+  color: rgba(255, 251, 0, 0.63);
+}
+
+.color-red .risk-label {
+  color: var(--coral-vibrant);
+}
+.aqi-color-scale {
+  position: relative;
+  width: 20px;
+  height: 300px;
+  border-radius: 12px;
+  border: 2px solid #a7a5a5;
+  background: linear-gradient(
+    to top,
+    #00e400 0%,
+    #00e400 25%,
+
+    #ffff00 25%,
+    #ffff00 50%,
+
+    #ff7e00 50%,
+    #ff7e00 75%,
+
+    #ff0000 75%,
+    #ff0000 100%
+  );
+}
+
+.upper-dashboard:hover,
+.enlarged-forecast:hover,
+.seasonal-trends-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.aqi-vertical-label {
+  writing-mode: vertical-rl; /* Makes text vertical */
+  transform: rotate(180deg); /* Optional: flip so it reads top-to-bottom */
+  font-weight: 700;
+  font-size: 1rem;
+  color: #333;
+  user-select: none;
+}
+.aqi-vertical-label .aqi-label-small {
+  font-size: 0.7rem; /* smaller size for Air Quality Index */
+  font-weight: 600;
+}
+
+.aqi-slider {
+  position: absolute;
+  left: 22px;
+  background: rgb(0, 0, 0);
+  border-radius: 4px;
+}
+
+.aqi-slider::after {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-right: 13px solid rgb(0, 0, 0);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 900px) {
+  .App {
+    padding: 24px;
+    gap: 40px;
+  }
+
+  .location-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .risk-card {
+    flex-direction: column;
+    gap: 30px;
+    align-items: flex-start;
+  }
+
+  .halo-container {
+    width: 100%;
+    height: 180px;
+  }
+
+  .aqi-value {
+    font-size: 6rem;
+  }
+
+  .lower-dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .conclusion-text {
+    font-size: 1.8rem;
+  }
+
+  .title {
+    font-family: "Poppins", sans-serif;
+    font-size: 40px;
+    font-weight: 600;
+  }
+
+  .dashboard-separator {
+    all: unset; /* remove browser default hr styling */
+    display: block;
+    width: 100%;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.08);
+    margin: 40px 0;
+  }
+
+  .forecasting-section {
+    display: flex;
+  }
+
+  .error-wind {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+  }
+}
