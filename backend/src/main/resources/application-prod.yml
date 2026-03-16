@@ -5,4 +5,3 @@ spring:
     # url: jdbc:mysql://149.118.151.140:3306/fit5120_onboarding_db?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Kuala_Lumpur
     username: root
     password: Team05isthebest!
-
