@@ -1,37 +1,57 @@
 import React, { useState } from "react";
-import { Search, Navigation, Loader2, Italic } from "lucide-react";
+import { Search, Navigation, Loader2 } from "lucide-react";
 
 function LocationSwitcher({
   locations,
-  onLocationChange,
+  onSearch,
   onUseCurrentLocation,
+  searchValue,
+  onSearchValueChange,
   locationError,
   isLocating,
+  isSearching,
 }) {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTermInternal, setSearchTermInternal] = useState("");
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
+  const searchTerm = searchValue ?? searchTermInternal;
+  const setSearchTerm = (nextValue) => {
+    if (typeof onSearchValueChange === "function") {
+      onSearchValueChange(nextValue);
+    } else {
+      setSearchTermInternal(nextValue);
+    }
+  };
+
   // Filter locations based on search term (AC4, AC6)
+  const normalizedSearch = searchTerm.trim().toLowerCase();
   const filteredLocations =
-    searchTerm.trim() === ""
-      ? []
+    normalizedSearch === ""
+      ? locations.slice(0, 10)
       : locations.filter((loc) =>
-          loc.name.toLowerCase().includes(searchTerm.toLowerCase()),
+          loc.name.toLowerCase().includes(normalizedSearch),
         );
 
   const handleSelect = (loc) => {
-    onLocationChange(loc.id);
     setSearchTerm(loc.name);
     setIsDropdownVisible(false);
   };
 
   const handleSearchClick = () => {
-    // AC5: If there's a match, select the first one on search click
-    if (filteredLocations.length > 0) {
-      handleSelect(filteredLocations[0]);
-    } else if (searchTerm.trim() !== "") {
-      setIsDropdownVisible(true);
-    }
+    if (isSearching) return;
+    if (normalizedSearch === "") return;
+
+    const exactMatch = locations.find(
+      (l) => l?.name && l.name.toLowerCase() === normalizedSearch,
+    );
+    const selectedName =
+      exactMatch?.name || filteredLocations[0]?.name || searchTerm.trim();
+
+    if (!selectedName) return;
+
+    setSearchTerm(selectedName);
+    setIsDropdownVisible(false);
+    onSearch(selectedName);
   };
 
   return (
@@ -44,6 +64,13 @@ function LocationSwitcher({
             alignItems: "center",
           }}
         >
+          <div>
+            <img
+              src="/AETHER_logo.png"
+              alt="logo"
+              style={{ width: "12rem", height: "11rem" }}
+            />
+          </div>
           <div
             className="title"
             style={{ fontSize: "2.5rem", paddingTop: "10px" }}
@@ -92,7 +119,6 @@ function LocationSwitcher({
         <div className="search-container">
           <label className="search-label">Search Your Location:</label>
           <div className="search-input-wrapper">
-            {/* Search Bar */}
             <Search size={24} strokeWidth={1.5} className="search-icon" />
             <input
               type="text"
@@ -106,12 +132,16 @@ function LocationSwitcher({
               onFocus={() => setIsDropdownVisible(true)}
               onKeyDown={(e) => e.key === "Enter" && handleSearchClick()}
             />
-            <button className="search-btn" onClick={handleSearchClick}>
-              SEARCH
+            <button
+              className="search-btn"
+              onClick={handleSearchClick}
+              disabled={isSearching}
+            >
+              {isSearching ? "SEARCHING..." : "SEARCH"}
             </button>
           </div>
 
-          {isDropdownVisible && searchTerm.trim() !== "" && (
+          {isDropdownVisible && (
             <ul className="search-results">
               {filteredLocations.length > 0 ? (
                 filteredLocations.map((loc) => (

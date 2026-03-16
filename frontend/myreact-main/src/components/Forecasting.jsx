@@ -3,12 +3,18 @@ import React from "react";
 function Forecasting({
   locationName,
   tomorrowRiskText,
-  currentApi,
+  tomorrowAqi,
   tomorrowColor,
   tomorrowError,
   tomorrowAdvice,
 }) {
-  const isError = Boolean(tomorrowError != null);
+  const isError = tomorrowError != null || tomorrowAqi == null;
+  console.log(
+    "Forecasting color:",
+    tomorrowColor,
+    "tommorrowAQI:",
+    tomorrowAqi,
+  );
   return (
     <div className="forecasting-section">
       <div className={`forecast-card enlarged-forecast ${tomorrowColor || ""}`}>
@@ -39,9 +45,11 @@ function Forecasting({
                 >
                   <div className="risk-card">
                     <div className="indicator-wrapper">
-                      <div className="risk-color-block"></div>
+                      <div
+                        className={`risk-color-block ${tomorrowColor || ""}`}
+                      ></div>
                       <div className="aqi-display">
-                        <span className="aqi-value">{currentApi}</span>
+                        <span className="aqi-value">{tomorrowAqi}</span>
                         <span
                           className="aqi-unit"
                           style={{ paddingTop: "20px" }}
@@ -75,7 +83,7 @@ function Forecasting({
               </div>
             ) : (
               <div className="senior-advice-text" style={{ fontSize: "25px" }}>
-                🌤️Tomorrow’s outlook is taking a short nap!
+                😴Tomorrow's Outlook is taking a short nap！
               </div>
             )}
           </div>

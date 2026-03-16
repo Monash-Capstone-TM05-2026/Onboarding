@@ -1,7 +1,12 @@
 import React from "react";
-import { TrendingUp, AlertCircle } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 
-function SeasonalTrends({ trendsData, trendSummary }) {
+function SeasonalTrends({
+  trendsData,
+  trendSummary,
+  trendsSource,
+  trendsNote,
+}) {
   if (!trendsData || trendsData.length === 0) {
     return (
       <div className="seasonal-trends-container">
@@ -10,6 +15,7 @@ function SeasonalTrends({ trendsData, trendSummary }) {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
+            textAlign: "center",
           }}
         >
           <div>No seasonal trends available 😴</div>
@@ -38,10 +44,6 @@ function SeasonalTrends({ trendsData, trendSummary }) {
     })
     .join(" ");
 
-  const peaks = trendsData.map((d, i, arr) => {
-    if (i === 0 || i === arr.length - 1) return false; // skip first/last
-    return d.value > arr[i - 1].value && d.value > arr[i + 1].value;
-  });
   //get three highest peaks indexes
   const peakIndexes = trendsData
     .map((d, i) => ({ value: d.value, index: i }))

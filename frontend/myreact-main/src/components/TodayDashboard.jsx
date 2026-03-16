@@ -35,13 +35,12 @@ function TodayDashboard({
               flexDirection: "row",
               justifyContent: "center",
               alignItems: "center",
-              gap: "1rem",
               marginTop: "2rem",
             }}
           >
             <div>
               <h1 className="conclusion-text" style={{ fontSize: "2.5rem" }}>
-                Unable to retrieve AQI data
+                {error || "Search a location to view AQI"}
               </h1>
             </div>
             <div className="error-visual">
@@ -103,7 +102,7 @@ function TodayDashboard({
             </div>
           </div>
           <div className="indicator-wrapper">
-            <div className="risk-color-block"></div>
+            <div className={`risk-color-block ${currentColor || ""}`}></div>
             <div className="aqi-display">
               <span className="aqi-value">{currentApi}</span>
               <span className="aqi-unit">AIR QUALITY LEVEL</span>

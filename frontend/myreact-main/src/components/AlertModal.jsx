@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 function AlertModal({ isOpen, aqiValue, onClose }) {
   if (!isOpen) return null;

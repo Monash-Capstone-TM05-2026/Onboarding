@@ -1,374 +1,561 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./App.css";
 import LocationSwitcher from "./components/LocationSwitcher";
 import TodayDashboard from "./components/TodayDashboard";
-import FuturePlanning from "./components/FuturePlanning";
 import AlertModal from "./components/AlertModal";
 import SeasonalTrends from "./components/SeasonalTrends";
 import Forecasting from "./components/Forecasting";
 
-function App() {
-  const locations = [
-    { id: 1, name: "Shah Alam" },
-    { id: 2, name: "Subang Jaya" },
-    { id: 3, name: "Klang" },
-    { id: 4, name: "Petaling Jaya" },
-    { id: 5, name: "Kuala Lumpur" },
-    { id: 6, name: "Johor Bahru" },
-    { id: 7, name: "Penang" },
-    { id: 8, name: "Ipoh" },
-    { id: 9, name: "Malacca" },
-    { id: 10, name: "Kuantan" },
-    { id: 999, name: "No Data Test" },
-  ];
+const DEFAULT_LOCATION = "Subang Jaya";
 
-  const [selectedLocationId, setSelectedLocationId] = useState(1);
+function getRiskLevel(aqi) {
+  if (aqi <= 50) return { color: "color-green", text: "GOOD" };
+  if (aqi <= 100) return { color: "color-yellow", text: "MODERATE" };
+  if (aqi <= 150) return { color: "color-orange", text: "UNHEALTHY" };
+  return { color: "color-red", text: "HAZARDOUS" };
+}
+
+function toNumberOrNull(value) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+const MONTH_LABELS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+function normalizeHistoryRecordsToTrends(historyRecords) {
+  const records = Array.isArray(historyRecords)
+    ? historyRecords
+    : Array.isArray(historyRecords?.data)
+      ? historyRecords.data
+      : Array.isArray(historyRecords?.history)
+        ? historyRecords.history
+        : Array.isArray(historyRecords?.monthly)
+          ? historyRecords.monthly
+          : [];
+
+  if (records.length === 0) return [];
+
+  const bucket = new Map();
+
+  for (const item of records) {
+    if (item?.isDeleted != null && Number(item.isDeleted) !== 0) continue;
+
+    const pollutant = String(item?.pollutant ?? "").toLowerCase();
+    if (pollutant && pollutant !== "aqi") continue;
+
+    const recordDate = String(
+      item?.recordDate ?? item?.date ?? item?.month ?? "",
+    );
+    const match = recordDate.match(/^\d{4}-([01]\d)-\d{2}$/);
+    if (!match) continue;
+
+    const monthNumber = Number(match[1]);
+    if (!(monthNumber >= 1 && monthNumber <= 12)) continue;
+
+    const value = toNumberOrNull(
+      item?.concentration ?? item?.value ?? item?.avgAqi ?? item?.aqi,
+    );
+    if (value == null) continue;
+
+    const monthIndex = monthNumber - 1;
+    const prev = bucket.get(monthIndex) || { sum: 0, count: 0 };
+    bucket.set(monthIndex, { sum: prev.sum + value, count: prev.count + 1 });
+  }
+
+  const trends = [];
+  for (let i = 0; i < 12; i += 1) {
+    const b = bucket.get(i);
+    if (!b || b.count === 0) continue;
+    const avg = b.sum / b.count;
+    trends.push({ month: MONTH_LABELS[i], value: Number(avg.toFixed(1)) });
+  }
+
+  return trends;
+}
+
+function App() {
+  const API_BASE_URL = "http://149.118.151.140:8080/api/air-quality";
+
+  const [locations, setLocations] = useState([]);
+  const [searchValue, setSearchValue] = useState("");
   const [dashboardData, setDashboardData] = useState(null);
   const [locationError, setLocationError] = useState(null);
   const [isLocating, setIsLocating] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [isLoadingLocations, setIsLoadingLocations] = useState(false);
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState(false);
+  const didLoadDefaultRef = useRef(false);
 
-  const fetchDashboardData = (locationId) => {
+  const fetchJson = useCallback(async (url) => {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Request failed (${response.status})`);
+    }
+    return response.json();
+  }, []);
+
+  const loadLocations = useCallback(async () => {
+    setIsLoadingLocations(true);
     setLocationError(null);
-
-    const mockTrends = [
-      { month: "Jan", value: 45 },
-      { month: "Feb", value: 50 },
-      { month: "Mar", value: 55 },
-      { month: "Apr", value: 75 },
-      { month: "May", value: 85 },
-      { month: "Jun", value: 95 },
-      { month: "Jul", value: 110 },
-      { month: "Aug", value: 105 },
-      { month: "Sep", value: 80 },
-      { month: "Oct", value: 65 },
-      { month: "Nov", value: 50 },
-      { month: "Dec", value: 40 },
-    ];
-
-    const mockDataMap = {
-      1: {
-        locationName: "Shah Alam",
-        currentApi: 45,
-        tomorrowApi: 55,
-        lastUpdated: "Updated: 10:00 AM",
-        dataSource: "Department of Environment",
-        seniorAdvice:
-          "✅ Air is clean. Perfect for a gentle morning walk or gardening.",
-        tomorrowAdvice:
-          "📅 Outlook: Clarity continues through the morning, gentle haze in the afternoon.",
-        historicalInsight:
-          "💡 Historical context: March traditionally maintains a balanced air quality baseline. The last 3 years have seen steady improvement.",
-        trendsData: mockTrends,
-        trendSummary:
-          "💡 Seasonal Alert: High-risk periods identified during June to August. Plan your outdoor exercise before 8 AM during these months.",
-      },
-      2: {
-        locationName: "Subang Jaya",
-        currentApi: 160,
-        tomorrowApi: 110,
-        lastUpdated: "Updated: 10:15 AM",
-        dataSource: "Department of Environment",
-        seniorAdvice:
-          "🟡 Air is slightly hazy. Keep windows closed and avoid heavy outdoor tasks.",
-        tomorrowAdvice:
-          "📅 Outlook: Increasing concentration expected tomorrow. Indoor settings advised.",
-        historicalInsight:
-          "💡 Historical context: Local patterns indicate elevated activity during industrial transitions. Air quality usually improves after the monsoon begins.",
-        trendsData: mockTrends.map((d) => ({ ...d, value: d.value + 20 })),
-        trendSummary:
-          "💡 Seasonal Alert: Subang Jaya typically experiences peak pollution in July. Ensure your air purifiers are maintained by then.",
-      },
-      3: {
-        locationName: "Klang",
-        currentApi: 125,
-        tomorrowApi: 95,
-        lastUpdated: "Updated: 10:30 AM",
-        dataSource: "National Monitoring Station",
-        seniorAdvice:
-          "⚠️ CAUTION: Air is unhealthy. Please stay indoors and use a mask if you must go out.",
-        tomorrowAdvice:
-          "📅 Outlook: Atmospheric clearing projected for tomorrow evening.",
-        historicalInsight:
-          "💡 Historical context: Coastal patterns often aggregate seasonal smog. Historically, air quality is best from October to February.",
-        trendsData: mockTrends.map((d) => ({ ...d, value: d.value + 40 })),
-        trendSummary:
-          "💡 Seasonal Alert: Coastal Klang is prone to sea-breeze haze. High-risk peaks occur annually between July and September.",
-      },
-      4: {
-        locationName: "Petaling Jaya",
-        currentApi: 65,
-        lastUpdated: "Updated: 10:45 AM",
-        dataSource: "Department of Environment",
-        seniorAdvice:
-          "🟡 Moderate conditions. Safe for short outings, but keep an eye on how you feel.",
-        historicalInsight: "Urban density affects air quality.",
-        trendsData: mockTrends,
-        trendSummary:
-          "💡 Seasonal Alert: Moderate risk detected in mid-year. High-risk peaks are less frequent but notable in August.",
-      },
-      5: {
-        locationName: "Kuala Lumpur",
-        currentApi: 75,
-        tomorrowApi: 80,
-        lastUpdated: "Updated: 11:00 AM",
-        dataSource: "City Monitoring Center",
-        seniorAdvice:
-          "🟡 City air is moderate. Best to stay in air-conditioned areas during peak traffic.",
-        tomorrowAdvice: "📅 Outlook: Haze expected in the evening.",
-        historicalInsight: "High traffic contributes to pollutants.",
-        trendsData: mockTrends.map((d) => ({ ...d, value: d.value + 15 })),
-        trendSummary:
-          "💡 Seasonal Alert: City center smog peaks during dry months (June-Sept). Traffic adds 20% to pollution during these times.",
-      },
-      6: {
-        locationName: "Johor Bahru",
-        currentApi: 55,
-        tomorrowApi: 60,
-        lastUpdated: "Updated: 11:15 AM",
-        dataSource: "Southern Region Hub",
-        seniorAdvice:
-          "🟡 Fair conditions. A good day for indoor hobbies or light patio sitting.",
-        tomorrowAdvice: "Similar conditions tomorrow.",
-        historicalInsight: "Border traffic can affect air quality.",
-        trendsData: mockTrends,
-        trendSummary:
-          "💡 Seasonal Alert: Cross-border haze peaks during late Q3. Stable air quality usually returns by November.",
-      },
-      7: {
-        locationName: "Penang",
-        currentApi: 35,
-        tomorrowApi: 40,
-        lastUpdated: "Updated: 11:30 AM",
-        dataSource: "Island Monitoring Post",
-        seniorAdvice:
-          "✅ Fresh island air! Ideal for any outdoor activities or social gatherings.",
-        tomorrowAdvice: "Clear skies ahead.",
-        historicalInsight: "Island geography helps disperse pollutants.",
-        trendsData: mockTrends.map((d) => ({ ...d, value: d.value - 10 })),
-        trendSummary:
-          "💡 Seasonal Alert: Penang enjoys optimal air quality year-round, with only minor dips in July.",
-      },
-      8: {
-        locationName: "Ipoh",
-        currentApi: 70,
-        tomorrowApi: 75,
-        lastUpdated: "Updated: 11:45 AM",
-        dataSource: "Perak Environment Dept",
-        seniorAdvice:
-          "🟡 Haze is present. Stay hydrated and avoid walking near busy roads.",
-        tomorrowAdvice: "Haze expected in the morning.",
-        historicalInsight: "Limestone hills can trap pollutants.",
-        trendsData: mockTrends,
-        trendSummary:
-          "💡 Seasonal Alert: Geographic basin effect traps morning haze between May and July. Early morning walks are safest in Q1.",
-      },
-      9: {
-        locationName: "Malacca",
-        currentApi: 48,
-        tomorrowApi: 42,
-        lastUpdated: "Updated: 12:00 PM",
-        dataSource: "Historical City Station",
-        seniorAdvice:
-          "✅ Good air quality. Enjoy the historical sites with a comfortable stroll.",
-        tomorrowAdvice: "Perfect for a walk.",
-        historicalInsight: "Coastal winds keep the air fresh.",
-        trendsData: mockTrends,
-        trendSummary:
-          "💡 Seasonal Alert: Excellent stability. Minor coastal haze possible in late August.",
-      },
-      10: {
-        locationName: "Kuantan",
-        currentApi: 95,
-        tomorrowApi: 105,
-        lastUpdated: "Updated: 12:15 PM",
-        dataSource: "East Coast Station",
-        seniorAdvice:
-          "🟡 High moderate. Sensitive individuals should limit outdoor exposure.",
-        tomorrowAdvice: "Risk of haze from the east.",
-        historicalInsight: "Monsoon season can impact air quality.",
-        trendsData: mockTrends.map((d) => ({ ...d, value: d.value + 10 })),
-        trendSummary:
-          "💡 Seasonal Alert: Monsoon transitions (May/Oct) are high-risk periods. Monitor easterly winds for early warnings.",
-      },
-      100: {
-        locationName: "Your Current Location",
-        currentApi: 32,
-        tomorrowApi: 35,
-        lastUpdated: "Updated: Just Now",
-        dataSource: "Local Hyper-Local Sensor",
-        seniorAdvice:
-          "✅ Your immediate surroundings are clear. Safe for all activities.",
-        tomorrowAdvice:
-          "📅 Outlook: Clear skies expected for the next 48 hours.",
-        historicalInsight:
-          "💡 Historical context: This area consistently maintains high air quality standards. Over the last 5 years, pollution levels have remained below the national safety threshold.",
-        trendsData: mockTrends.map((d) => ({ ...d, value: d.value - 15 })),
-        trendSummary:
-          "💡 Seasonal Alert: Your area is historically stable. Peak safety is maintained from December through April.",
-      },
-    };
-
-    const baseData = mockDataMap[locationId];
-
-    if (!baseData) {
-      setDashboardData({
-        locationName: "Unknown Location",
-        currentApi: null,
-        tomorrowError: "Unable to retrieve air quality data for this location.",
-        error: "Unable to retrieve air quality data for this location.",
-        currentColor: "color-error",
-        tomorrowDataAvailable: false,
-      });
-      return;
+    try {
+      const data = await fetchJson(`${API_BASE_URL}/locations`);
+      console.log("Locations API:", data);
+      const mapped = Array.isArray(data)
+        ? data
+            .filter((loc) => loc && loc.id != null && loc.areaName)
+            .map((loc) => ({
+              id: loc.id,
+              name: loc.areaName,
+              state: loc.state || "",
+            }))
+        : [];
+      const dummyLocation = {
+        id: -1, // use a negative or unique id so it doesn't clash
+        name: "Testing Alert",
+        state: "Test State",
+      };
+      setLocations([...mapped, dummyLocation]);
+    } catch (e) {
+      setLocations([]);
+      setLocationError("Locations unavailable. Please refresh and try again.");
+    } finally {
+      setIsLoadingLocations(false);
     }
+  }, [API_BASE_URL, fetchJson]);
 
-    // Helper to get color/text by AQI
-    const getRiskLevel = (aqi) => {
-      if (aqi <= 50) return { color: "color-green", text: "GOOD" };
-      if (aqi <= 100) return { color: "color-yellow", text: "MODERATE" };
-      if (aqi <= 150) return { color: "color-orange", text: "UNHEALTHY" };
-      return { color: "color-red", text: "HAZARDOUS" };
-    };
+  const resolveLocationIds = useCallback(
+    async (locationText) => {
+      const raw = String(locationText || "").trim();
+      if (!raw) return [];
 
-    // updating both currentrisk and tomorrow risk color and text based on the AQI value
-    const currentRisk = getRiskLevel(baseData.currentApi);
-    const tomorrowDataAvailable =
-      baseData.tomorrowApi !== undefined && baseData.tomorrowApi !== null;
-    const tomorrowRisk = tomorrowDataAvailable
-      ? getRiskLevel(baseData.tomorrowApi)
-      : null;
+      const primary = raw.split(",")[0].trim();
+      const candidates = [raw, primary].filter(Boolean);
+      const normalizedCandidates = candidates.map((c) => c.toLowerCase());
 
-    const finalData = {
-      ...baseData,
-      currentColor: currentRisk.color,
-      currentRiskText: currentRisk.text,
-      tomorrowColor: tomorrowRisk ? tomorrowRisk.color : "color-error",
-      tomorrowRiskText: tomorrowRisk ? tomorrowRisk.text : null,
-      tomorrowError: tomorrowDataAvailable
-        ? null /* No error if data is available */
-        : "Currently unable to retrieve air quality data for this location." /*else show error message*/,
-      currentAdvice:
-        currentRisk.text === "GOOD"
-          ? "✅ Atmosphere is serene and safe for outdoor leisure"
-          : currentRisk.text === "MODERATE"
-            ? "🟡 Ambient air is moderate, mindful activity recommended"
-            : currentRisk.text === "UNHEALTHY"
-              ? "⚠️ Caution: Atmospheric quality is currently compromised"
-              : "🚨 Hazardous air quality — avoid outdoor exposure",
+      const uniqueById = (items) => {
+        const seen = new Set();
+        const out = [];
+        for (const it of items) {
+          const id = it?.id;
+          if (id == null || seen.has(id)) continue;
+          seen.add(id);
+          out.push(it);
+        }
+        return out;
+      };
 
-      tomorrowAdvice: tomorrowRisk
-        ? tomorrowRisk.text === "GOOD"
-          ? "Clear skies and fresh air expected tomorrow"
-          : tomorrowRisk.text === "MODERATE"
-            ? "Moderate conditions expected, consider indoor plans"
-            : tomorrowRisk.text === "UNHEALTHY"
-              ? "Unhealthy conditions expected, stay indoors if possible"
-              : "Hazardous conditions expected, avoid outdoor activities"
-        : "Tomorrow's air quality data unavailable",
-    };
+      const orderExactMatches = (items) =>
+        [...items].sort((a, b) => {
+          const aStar = a?.state === "*" ? 1 : 0;
+          const bStar = b?.state === "*" ? 1 : 0;
+          if (aStar !== bStar) return bStar - aStar;
+          return 0;
+        });
 
-    setDashboardData(finalData);
+      const findIdsInList = (list) => {
+        const exactMatches = [];
+        for (const c of normalizedCandidates) {
+          for (const l of list) {
+            if (l?.name && l.name.toLowerCase() === c) {
+              exactMatches.push(l);
+            }
+          }
+        }
 
-    if (baseData.currentApi > 150) {
-      setShowAlert(true);
-    }
-  };
+        const uniqueExact = uniqueById(exactMatches);
+        if (uniqueExact.length > 0)
+          return orderExactMatches(uniqueExact).map((x) => x.id);
 
-  const handleUseCurrentLocation = () => {
-    console.log("handleUseCurrentLocation triggered"); // Debugging
+        for (const c of normalizedCandidates) {
+          const fuzzyMatches = list.filter(
+            (l) =>
+              l?.name &&
+              (l.name.toLowerCase().includes(c) ||
+                c.includes(l.name.toLowerCase())),
+          );
+          const uniqueFuzzy = uniqueById(fuzzyMatches);
+          if (uniqueFuzzy.length > 0) return uniqueFuzzy.map((x) => x.id);
+        }
 
+        return [];
+      };
+
+      const localIds = findIdsInList(locations);
+      if (localIds.length > 0) return localIds;
+
+      if (locations.length > 0) return [];
+
+      try {
+        const data = await fetchJson(`${API_BASE_URL}/locations`);
+        const mapped = Array.isArray(data)
+          ? data
+              .filter((loc) => loc && loc.id != null && loc.areaName)
+              .map((loc) => ({
+                id: loc.id,
+                name: loc.areaName,
+                state: loc.state || "",
+              }))
+          : [];
+
+        if (mapped.length > 0) setLocations(mapped);
+        return findIdsInList(mapped);
+      } catch {
+        return [];
+      }
+    },
+    [API_BASE_URL, fetchJson, locations],
+  );
+
+  const loadDashboardData = useCallback(
+    async (location) => {
+      const locationText = (location || "").trim();
+      if (locationText === "Testing Alert") {
+        const dummyCurrentAqi = 173;
+        const dummyTomorrowAqi = 0;
+
+        setDashboardData({
+          locationName: "Testing Alert",
+          currentApi: dummyCurrentAqi, // <-- match what displayData expects
+          tomorrowApi: dummyTomorrowAqi,
+          currentColor: "color-red",
+          currentRiskText: "HAZARDOUS",
+          currentAdvice: "Hazardous air quality — avoid outdoor exposure.",
+          tomorrowRisk: null,
+          tomorrowColor: null,
+          tomorrowRiskText: "MODERATE",
+          tomorrowAdvice:
+            "Hazardous conditions expected, avoid outdoor activities.",
+          error: null,
+          trendsData: [],
+          trendSummary: "",
+          trendsSource: "history",
+          trendsNote: "This is dummy data",
+        });
+
+        if (dummyCurrentAqi > 150) {
+          setShowAlert(true);
+        }
+
+        return;
+      }
+
+      if (!locationText) {
+        setDashboardData({
+          locationName: "",
+          currentApi: null,
+          error: "Please enter a location.",
+          trendsData: [],
+          trendSummary: "",
+          trendsSource: "history",
+          trendsNote: "No seasonal trends available",
+        });
+        return;
+      }
+
+      setIsLoadingDashboard(true);
+      setLocationError(null);
+      try {
+        const isDefaultLocation =
+          locationText.toLowerCase() === DEFAULT_LOCATION.toLowerCase();
+
+        const locationIds = await resolveLocationIds(locationText);
+        if (locationIds.length === 0 && !isDefaultLocation) {
+          setDashboardData({
+            locationName: locationText,
+            currentApi: null,
+            error: "Unable to retrieve AQI data for this Location",
+            tomorrowColor: "color-error",
+            tomorrowRiskText: null,
+            tomorrowError: "Unable to retrieve AQI data for this Location",
+            tomorrowAdvice: "",
+            trendsData: [],
+            trendSummary: "",
+            trendsSource: "history",
+            trendsNote: "No seasonal trends available",
+          });
+          return;
+        }
+
+        const params = new URLSearchParams({ city: locationText });
+        console.log("Calling API for city:", locationText);
+        const data = await fetchJson(
+          `${API_BASE_URL}/real-time/air-quality?${params}`,
+        );
+        console.log("AQI API RESPONSE:", data);
+
+        const currentAqi = toNumberOrNull(data?.currentAqi);
+        const tomorrowAqi = toNumberOrNull(data?.tomorrowAqi);
+
+        const hasCurrent = currentAqi != null && currentAqi > 0;
+        const hasTomorrow = tomorrowAqi != null;
+
+        const currentRisk = hasCurrent ? getRiskLevel(currentAqi) : null;
+        const tomorrowRisk = hasTomorrow ? getRiskLevel(tomorrowAqi) : null;
+
+        let trendsData = [];
+        let trendSummary = "";
+        let trendsSource = "history";
+        let trendsNote = "No seasonal trends available";
+
+        try {
+          const tried = [];
+          for (const id of locationIds.slice(0, 5)) {
+            tried.push(id);
+            const historyRecords = await fetchJson(
+              `${API_BASE_URL}/history/${encodeURIComponent(String(id))}`,
+            );
+            const normalized = normalizeHistoryRecordsToTrends(historyRecords);
+            if (normalized.length > 0) {
+              trendsData = normalized;
+              trendsSource = "history";
+              trendsNote = "";
+              break;
+            }
+          }
+
+          if (trendsSource !== "history") {
+            trendsNote = "No seasonal trends available";
+          }
+        } catch {
+          trendsData = [];
+          trendSummary = "";
+          trendsSource = "history";
+          trendsNote = "No seasonal trends available";
+        }
+
+        setDashboardData({
+          locationName: hasCurrent
+            ? data.locationName || locationText
+            : locationText,
+          currentApi: hasCurrent ? currentAqi : null,
+          tomorrowAqi: tomorrowAqi === 0 ? null : tomorrowAqi,
+          lastUpdated: data.lastUpdated
+            ? `Updated: ${new Date(data.lastUpdated).toLocaleString()}`
+            : "",
+          dataSource: "Air Quality Service",
+          currentColor: currentRisk ? currentRisk.color : "",
+          currentRiskText: currentRisk ? currentRisk.text : "",
+          currentAdvice: data.currentAdvice || "",
+          tomorrowColor: tomorrowRisk ? tomorrowRisk.color : "color-error",
+          tomorrowRiskText: tomorrowRisk ? tomorrowRisk.text : null,
+          tomorrowError: hasTomorrow
+            ? null
+            : "Tomorrow's air quality unavailable.",
+          tomorrowAdvice: data.tomorrowAdvice || "",
+          historicalInsight: data.historicalInsight,
+          trendsData,
+          trendSummary,
+          trendsSource,
+          trendsNote,
+          error: hasCurrent
+            ? null
+            : "Unable to retrieve AQI data for this Location",
+        });
+
+        if (hasCurrent && currentAqi > 150) {
+          setShowAlert(true);
+        }
+      } catch (e) {
+        setDashboardData({
+          locationName: locationText,
+          currentApi: null,
+          error: "Unable to retrieve AQI data for this Location",
+          tomorrowColor: "color-error",
+          tomorrowRiskText: null,
+          tomorrowError: "Unable to retrieve AQI data for this Location",
+          tomorrowAdvice: "",
+          trendsData: [],
+          trendSummary: "",
+          trendsSource: "history",
+          trendsNote: "No seasonal trends available",
+        });
+      } finally {
+        setIsLoadingDashboard(false);
+      }
+    },
+    [API_BASE_URL, fetchJson, resolveLocationIds],
+  );
+
+  const reverseGeocode = useCallback(async ({ latitude, longitude }) => {
+    const url = new URL("https://nominatim.openstreetmap.org/reverse");
+    url.searchParams.set("format", "jsonv2");
+    url.searchParams.set("lat", String(latitude));
+    url.searchParams.set("lon", String(longitude));
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+    if (!response.ok) throw new Error(`Geocode failed (${response.status})`);
+    const data = await response.json();
+
+    const address = data?.address || {};
+    const city =
+      address.city ||
+      address.town ||
+      address.village ||
+      address.suburb ||
+      address.county;
+    const state = address.state;
+    const country = address.country;
+
+    const parts = [city, state, country].filter(Boolean);
+    const result = parts.join(", ");
+    return result || data?.display_name || "";
+  }, []);
+
+  const handleUseCurrentLocation = useCallback(async () => {
     if (!navigator.geolocation) {
-      const errorMsg = "Geolocation is not supported by your browser.";
-      console.error(errorMsg);
-      setLocationError(errorMsg);
+      setLocationError("Geolocation is not supported by your browser.");
       return;
     }
 
     setIsLocating(true);
     setLocationError(null);
 
-    const options = {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0,
-    };
+    try {
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      };
 
-    /* location logic */
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        console.log("Geolocation success:", position);
-        // Force a refresh if it's already 100 by calling fetch directly or toggling a refresh state
-        setSelectedLocationId(100);
-        fetchDashboardData(100);
-        setIsLocating(false);
-      },
-      (error) => {
-        let errorMsg = "";
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMsg =
-              "Location access denied. Please enter the location in the search bar above.";
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMsg =
-              "Location unavailable. Please check your internet connection or GPS.";
-            break;
-          case error.TIMEOUT:
-            errorMsg =
-              "Location request timed out. Please try again or search manually.";
-            break;
-          default:
-            errorMsg = "Location error. Please use the manual search feature.";
-        }
-        console.error("Geolocation error:", error);
-        setLocationError(errorMsg);
-        setIsLocating(false);
-      },
-      options,
-    );
-  };
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, options);
+      });
+
+      const locationText = await reverseGeocode(position.coords);
+
+      if (!locationText) {
+        setLocationError(
+          "Unable to determine your city. Please search manually.",
+        );
+        return;
+      }
+
+      await loadDashboardData(locationText);
+    } catch (error) {
+      let errorMsg = "";
+
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          errorMsg =
+            "Location access denied. Please enter the location in the search bar above.";
+          break;
+
+        case error.POSITION_UNAVAILABLE:
+          errorMsg =
+            "Location unavailable. Please check your internet connection or GPS.";
+          break;
+
+        case error.TIMEOUT:
+          errorMsg =
+            "Location request timed out. Please try again or search manually.";
+          break;
+
+        default:
+          errorMsg =
+            "Unable to determine your location. Please search manually.";
+      }
+
+      console.error("Geolocation error:", error);
+      setLocationError(errorMsg);
+    } finally {
+      setIsLocating(false);
+    }
+  }, [loadDashboardData, reverseGeocode]);
 
   useEffect(() => {
-    fetchDashboardData(selectedLocationId);
+    loadLocations();
+  }, [loadLocations]);
 
-    //fetch data every hour
-    const interval = setInterval(() => {
-      const now = new Date();
-      if (now.getMinutes() === 0) {
-        console.log(`Auto-refreshing data for hour: ${now.getHours()}`);
-        fetchDashboardData(selectedLocationId);
-      }
-    }, 60000); // Check every 60 seconds
+  /*useEffect(() => {
+    if (didLoadDefaultRef.current) return;
+    didLoadDefaultRef.current = true;
+    loadDashboardData(DEFAULT_LOCATION);
+  }, [loadDashboardData]); */
 
-    return () => clearInterval(interval);
-  }, [selectedLocationId]);
+  const handleSearch = (locationText) => {
+    setSearchValue(locationText);
+    loadDashboardData(locationText);
+  };
 
-  if (!dashboardData)
-    return <div className="initializing">Initializing...</div>;
+  const displayData =
+    dashboardData ||
+    (isLoadingDashboard
+      ? {
+          locationName: "",
+          currentApi: null,
+          error: "Searching...",
+          trendsData: [],
+          trendSummary: "",
+          trendsSource: "history",
+          trendsNote: "",
+        }
+      : isLoadingLocations
+        ? {
+            locationName: "",
+            currentApi: null,
+            error: "Loading locations...",
+            trendsData: [],
+            trendSummary: "",
+            trendsSource: "history",
+            trendsNote: "",
+          }
+        : {
+            locationName: "",
+            currentApi: null,
+            error: "Search a location to view AQI.",
+            trendsData: [],
+            trendSummary: "",
+            trendsSource: "history",
+            trendsNote: "No seasonal trends available",
+            tomorrowApi: null,
+          });
 
   return (
-    <div className={`App ${dashboardData.currentColor}`}>
+    <div className={`App ${displayData.currentColor || ""}`}>
       <LocationSwitcher
         locations={locations}
-        onLocationChange={setSelectedLocationId}
+        onSearch={handleSearch}
         onUseCurrentLocation={handleUseCurrentLocation}
+        searchValue={searchValue}
+        onSearchValueChange={setSearchValue}
         locationError={locationError}
         isLocating={isLocating}
+        isSearching={isLoadingDashboard}
       />
 
       <main className="dashboard-main">
         <TodayDashboard
-          locationName={dashboardData.locationName}
-          currentApi={dashboardData.currentApi}
-          currentAdvice={dashboardData.currentAdvice}
-          tomorrowAdvice={dashboardData.tomorrowAdvice}
-          currentRiskText={dashboardData.currentRiskText}
-          currentColor={dashboardData.currentColor}
-          error={dashboardData.error}
-          lastUpdated={dashboardData.lastUpdated}
-          dataSource={dashboardData.dataSource}
-          seniorAdvice={dashboardData.seniorAdvice}
+          locationName={displayData.locationName}
+          currentApi={displayData.currentApi}
+          currentAdvice={displayData.currentAdvice}
+          tomorrowAdvice={displayData.tomorrowAdvice}
+          currentRiskText={displayData.currentRiskText}
+          currentColor={displayData.currentColor}
+          error={displayData.error}
+          lastUpdated={displayData.lastUpdated}
+          dataSource={displayData.dataSource}
+          seniorAdvice={displayData.seniorAdvice}
         />
 
         <div className="secondary-dashboard-grid">
@@ -382,12 +569,12 @@ function App() {
             historicalInsight={dashboardData.historicalInsight}
           /> */}
           <Forecasting
-            locationName={dashboardData.locationName}
-            tomorrowRiskText={dashboardData.tomorrowRiskText}
-            currentApi={dashboardData.currentApi}
-            tomorrowColor={dashboardData.tomorrowColor}
-            tomorrowError={dashboardData.tomorrowError}
-            tomorrowAdvice={dashboardData.tomorrowAdvice}
+            locationName={displayData.locationName}
+            tomorrowRiskText={displayData.tomorrowRiskText}
+            tomorrowAqi={displayData.tomorrowAqi}
+            tomorrowColor={displayData.tomorrowColor}
+            tomorrowError={displayData.tomorrowError}
+            tomorrowAdvice={displayData.tomorrowAdvice}
           />
 
           <div
@@ -397,8 +584,10 @@ function App() {
             }}
           >
             <SeasonalTrends
-              trendsData={dashboardData.trendsData}
-              trendSummary={dashboardData.trendSummary}
+              trendsData={displayData.trendsData}
+              trendSummary={displayData.trendSummary}
+              trendsSource={displayData.trendsSource}
+              trendsNote={displayData.trendsNote}
             />
           </div>
         </div>
@@ -406,7 +595,7 @@ function App() {
 
       <AlertModal
         isOpen={showAlert}
-        aqiValue={dashboardData.currentApi}
+        aqiValue={displayData.currentApi}
         onClose={() => setShowAlert(false)}
       />
     </div>
