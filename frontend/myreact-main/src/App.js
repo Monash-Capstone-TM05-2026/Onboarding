@@ -451,10 +451,9 @@ function App() {
         );
         return;
       }
+      const city = locationText.split(",")[0];
       await loadDashboardData(
-        "Subang Jaya Student Council" === locationText
-          ? DEFAULT_LOCATION
-          : locationText,
+        "Subang Jaya City Council" === city ? DEFAULT_LOCATION : city,
       );
     } catch (error) {
       let errorMsg = "";
