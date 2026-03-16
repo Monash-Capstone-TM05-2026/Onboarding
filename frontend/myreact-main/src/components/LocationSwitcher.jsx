@@ -66,7 +66,7 @@ function LocationSwitcher({
         >
           <div>
             <img
-              src="/AETHER_logo.png"
+              src={process.env.PUBLIC_URL + "/AETHER_logo.png"}
               alt="logo"
               style={{ width: "12rem", height: "11rem" }}
             />
