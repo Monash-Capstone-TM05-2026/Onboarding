@@ -120,12 +120,12 @@ function App() {
       console.log("Locations API:", data);
       const mapped = Array.isArray(data)
         ? data
-          .filter((loc) => loc && loc.id != null && loc.areaName)
-          .map((loc) => ({
-            id: loc.id,
-            name: loc.areaName,
-            state: loc.state || "",
-          }))
+            .filter((loc) => loc && loc.id != null && loc.areaName)
+            .map((loc) => ({
+              id: loc.id,
+              name: loc.areaName,
+              state: loc.state || "",
+            }))
         : [];
       const dummyLocation = {
         id: -1, // use a negative or unique id so it doesn't clash
@@ -207,12 +207,12 @@ function App() {
         const data = await fetchJson(`${API_BASE_URL}/locations`);
         const mapped = Array.isArray(data)
           ? data
-            .filter((loc) => loc && loc.id != null && loc.areaName)
-            .map((loc) => ({
-              id: loc.id,
-              name: loc.areaName,
-              state: loc.state || "",
-            }))
+              .filter((loc) => loc && loc.id != null && loc.areaName)
+              .map((loc) => ({
+                id: loc.id,
+                name: loc.areaName,
+                state: loc.state || "",
+              }))
           : [];
 
         if (mapped.length > 0) setLocations(mapped);
@@ -452,7 +452,8 @@ function App() {
         return;
       }
 
-      await loadDashboardData(locationText);
+      const city = locationText.split(",")[0];
+      await loadDashboardData(city);
     } catch (error) {
       let errorMsg = "";
 
@@ -503,34 +504,34 @@ function App() {
     dashboardData ||
     (isLoadingDashboard
       ? {
-        locationName: "",
-        currentApi: null,
-        error: "Searching...",
-        trendsData: [],
-        trendSummary: "",
-        trendsSource: "history",
-        trendsNote: "",
-      }
-      : isLoadingLocations
-        ? {
           locationName: "",
           currentApi: null,
-          error: "Loading locations...",
+          error: "Searching...",
           trendsData: [],
           trendSummary: "",
           trendsSource: "history",
           trendsNote: "",
         }
+      : isLoadingLocations
+        ? {
+            locationName: "",
+            currentApi: null,
+            error: "Loading locations...",
+            trendsData: [],
+            trendSummary: "",
+            trendsSource: "history",
+            trendsNote: "",
+          }
         : {
-          locationName: "",
-          currentApi: null,
-          error: "Search a location to view AQI.",
-          trendsData: [],
-          trendSummary: "",
-          trendsSource: "history",
-          trendsNote: "No seasonal trends available",
-          tomorrowApi: null,
-        });
+            locationName: "",
+            currentApi: null,
+            error: "Search a location to view AQI.",
+            trendsData: [],
+            trendSummary: "",
+            trendsSource: "history",
+            trendsNote: "No seasonal trends available",
+            tomorrowApi: null,
+          });
 
   return (
     <div className={`App ${displayData.currentColor || ""}`}>
