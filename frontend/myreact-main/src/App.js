@@ -91,7 +91,8 @@ function normalizeHistoryRecordsToTrends(historyRecords) {
 }
 
 function App() {
-  const API_BASE_URL = "http://149.118.151.140:8080/api/air-quality";
+  // const API_BASE_URL = "http://149.118.151.140:8080/api/air-quality";
+  const API_BASE_URL = "/api/air-quality"; // relative path for server
 
   const [locations, setLocations] = useState([]);
   const [searchValue, setSearchValue] = useState("");
@@ -119,12 +120,12 @@ function App() {
       console.log("Locations API:", data);
       const mapped = Array.isArray(data)
         ? data
-            .filter((loc) => loc && loc.id != null && loc.areaName)
-            .map((loc) => ({
-              id: loc.id,
-              name: loc.areaName,
-              state: loc.state || "",
-            }))
+          .filter((loc) => loc && loc.id != null && loc.areaName)
+          .map((loc) => ({
+            id: loc.id,
+            name: loc.areaName,
+            state: loc.state || "",
+          }))
         : [];
       const dummyLocation = {
         id: -1, // use a negative or unique id so it doesn't clash
@@ -206,12 +207,12 @@ function App() {
         const data = await fetchJson(`${API_BASE_URL}/locations`);
         const mapped = Array.isArray(data)
           ? data
-              .filter((loc) => loc && loc.id != null && loc.areaName)
-              .map((loc) => ({
-                id: loc.id,
-                name: loc.areaName,
-                state: loc.state || "",
-              }))
+            .filter((loc) => loc && loc.id != null && loc.areaName)
+            .map((loc) => ({
+              id: loc.id,
+              name: loc.areaName,
+              state: loc.state || "",
+            }))
           : [];
 
         if (mapped.length > 0) setLocations(mapped);
@@ -502,34 +503,34 @@ function App() {
     dashboardData ||
     (isLoadingDashboard
       ? {
+        locationName: "",
+        currentApi: null,
+        error: "Searching...",
+        trendsData: [],
+        trendSummary: "",
+        trendsSource: "history",
+        trendsNote: "",
+      }
+      : isLoadingLocations
+        ? {
           locationName: "",
           currentApi: null,
-          error: "Searching...",
+          error: "Loading locations...",
           trendsData: [],
           trendSummary: "",
           trendsSource: "history",
           trendsNote: "",
         }
-      : isLoadingLocations
-        ? {
-            locationName: "",
-            currentApi: null,
-            error: "Loading locations...",
-            trendsData: [],
-            trendSummary: "",
-            trendsSource: "history",
-            trendsNote: "",
-          }
         : {
-            locationName: "",
-            currentApi: null,
-            error: "Search a location to view AQI.",
-            trendsData: [],
-            trendSummary: "",
-            trendsSource: "history",
-            trendsNote: "No seasonal trends available",
-            tomorrowApi: null,
-          });
+          locationName: "",
+          currentApi: null,
+          error: "Search a location to view AQI.",
+          trendsData: [],
+          trendSummary: "",
+          trendsSource: "history",
+          trendsNote: "No seasonal trends available",
+          tomorrowApi: null,
+        });
 
   return (
     <div className={`App ${displayData.currentColor || ""}`}>
