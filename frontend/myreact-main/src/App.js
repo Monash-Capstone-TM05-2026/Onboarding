@@ -451,9 +451,11 @@ function App() {
         );
         return;
       }
-
-      const city = locationText.split(",")[0];
-      await loadDashboardData(city);
+      await loadDashboardData(
+        DEFAULT_LOCATION.toLowerCase() === locationText.toLowerCase()
+          ? DEFAULT_LOCATION
+          : locationText,
+      );
     } catch (error) {
       let errorMsg = "";
 
