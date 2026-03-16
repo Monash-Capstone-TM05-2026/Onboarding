@@ -452,7 +452,7 @@ function App() {
         return;
       }
       await loadDashboardData(
-        DEFAULT_LOCATION.toLowerCase() === locationText.toLowerCase()
+        "Subang Jaya Student Council" === locationText
           ? DEFAULT_LOCATION
           : locationText,
       );
