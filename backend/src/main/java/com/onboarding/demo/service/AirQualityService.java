@@ -1,6 +1,9 @@
 package com.onboarding.demo.service;
 
+import com.onboarding.demo.entity.OpenDosmMonthlyData;
 import com.onboarding.demo.vo.DashboardVO;
+
+import java.util.List;
 
 public interface AirQualityService {
     /**
@@ -9,4 +12,8 @@ public interface AirQualityService {
      * @return Assembled Kanban view data
      */
     DashboardVO getElderlyDashboard(Long locationId);
+
+    DashboardVO getCityAirQuality(String city);
+
+    List<OpenDosmMonthlyData> getMonthlyDataByLocationId(Long locationId);
 }

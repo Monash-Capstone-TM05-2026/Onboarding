@@ -1,11 +1,13 @@
 package com.onboarding.demo.controller;
 
 import com.onboarding.demo.entity.Location;
+import com.onboarding.demo.entity.OpenDosmMonthlyData;
 import com.onboarding.demo.mapper.LocationMapper;
 import com.onboarding.demo.service.AirQualityService;
 import com.onboarding.demo.vo.DashboardVO;
 import com.onboarding.demo.vo.LocationVO;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,8 +28,8 @@ public class AirQualityController {
 
     private final LocationMapper locationMapper;
 
-    @GetMapping("/dashboard/{locationId}")
-    @Operation(summary = "Obtain comprehensive Kanban data", description = "Return to today's real-time information, tomorrow's predictions and historical trend insights all at once")
+    //@GetMapping("/dashboard/{locationId}")
+    //@Operation(summary = "Obtain comprehensive Kanban data", description = "Return to today's real-time information, tomorrow's predictions and historical trend insights all at once")
     public ResponseEntity<DashboardVO> getDashboard(@PathVariable Long locationId) {
         DashboardVO dashboardData = airQualityService.getElderlyDashboard(locationId);
         return ResponseEntity.ok(dashboardData);
@@ -50,5 +52,30 @@ public class AirQualityController {
         }).collect(Collectors.toList());
 
         return ResponseEntity.ok(voList);
+    }
+
+    @GetMapping("/real-time/air-quality")
+    @Operation(summary = "Get real-time and tomorrow's air quality")
+    public ResponseEntity<DashboardVO> getAirQuality(
+            @Parameter(description = "Name of the city (e.g., beijing). If empty, defaults to server configured location.")
+            @RequestParam(value = "city", required = false) String city) {
+
+        DashboardVO data = airQualityService.getCityAirQuality(city);
+        return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/history/{locationId}")
+    @Operation(summary = "Get historical air quality data")
+    public ResponseEntity<List<OpenDosmMonthlyData>> getHistoryAqi(
+            @PathVariable("locationId") Long locationId) {
+
+        // Parameter verification
+        if (locationId == null || locationId <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<OpenDosmMonthlyData> dataList = airQualityService.getMonthlyDataByLocationId(locationId);
+
+        return ResponseEntity.ok(dataList);
     }
 }

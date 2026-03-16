@@ -1,4 +1,7 @@
 spring:
+  profiles:
+    active: prod
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     # Configure the database URL with timezone set to Asia/Kuala_Lumpur
@@ -15,3 +18,9 @@ mybatis-plus:
     map-underscore-to-camel-case: true
     # Enable SQL printing in the console
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+
+waqi:
+  api:
+    url: "https://api.waqi.info/feed/%s/?token=%s"
+    token: "f6fc9cf0b79291674b29b093f7d59558a2df6dff"
