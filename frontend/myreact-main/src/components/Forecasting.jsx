@@ -9,12 +9,16 @@ function Forecasting({
   tomorrowAdvice,
 }) {
   const isError = tomorrowError != null || tomorrowAqi == null;
+  if (tomorrowAqi == null) {
+    tomorrowColor = null;
+  }
   console.log(
     "Forecasting color:",
     tomorrowColor,
     "tommorrowAQI:",
     tomorrowAqi,
   );
+
   return (
     <div className="forecasting-section">
       <div className={`forecast-card enlarged-forecast ${tomorrowColor || ""}`}>
@@ -66,7 +70,9 @@ function Forecasting({
                         <span className="badge-label">
                           Expected Air Quality to Be
                         </span>
-                        <span className="badge-value">{tomorrowRiskText}</span>
+                        <span className={`badge-value ${tomorrowColor || ""}`}>
+                          {tomorrowRiskText}
+                        </span>
                       </div>
                     )}
                   </div>

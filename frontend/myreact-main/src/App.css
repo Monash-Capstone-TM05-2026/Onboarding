@@ -576,18 +576,19 @@ body {
   letter-spacing: 0.05em;
 }
 
-.color-green .badge-value {
+.badge-value.color-green {
   color: var(--sage-vibrant);
 }
-.color-yellow .badge-value {
+
+.badge-value.color-yellow {
   color: #e3e30a;
 }
 
-.color-orange .badge-value {
+.badge-value.color-orange {
   color: #e67e22;
-  margin-left: 15px;
 }
-.color-red .badge-value {
+
+.badge-value.color-red {
   color: var(--coral-vibrant);
 }
 
